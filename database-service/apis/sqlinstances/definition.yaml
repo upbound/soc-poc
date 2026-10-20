@@ -1,0 +1,155 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: sqlinstances.aws.platform.upbound.io
+spec:
+  group: aws.platform.upbound.io
+  names:
+    categories:
+    - crossplane
+    kind: SQLInstance
+    plural: sqlinstances
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    additionalPrinterColumns:
+    - name: ENGINE
+      type: string
+      jsonPath: .spec.parameters.engine
+    - name: VPC
+      type: string
+      jsonPath: .status.vpcId
+    - name: ENDPOINT
+      type: string
+      jsonPath: .status.address
+    schema:
+      openAPIV3Schema:
+        type: object
+        description: >-
+          SQLInstance is an RDS database placed in a Network. The Network is a local XR in the
+          same namespace, selected by name or labels; the database reads its VPC, subnets and
+          CIDR from that Network's status and spec. On a consumer of the Network service the
+          Network is a proxy XR, so this works the same way across control planes.
+        properties:
+          spec:
+            type: object
+            required:
+            - parameters
+            properties:
+              parameters:
+                type: object
+                description: SQLInstance parameters.
+                required:
+                - region
+                - engine
+                - engineVersion
+                - storageGB
+                - passwordSecretRef
+                x-kubernetes-validations:
+                - rule: has(self.networkRef) || has(self.networkSelector)
+                  message: set networkRef or networkSelector to place the database in a Network
+                properties:
+                  region:
+                    type: string
+                    description: AWS region of the database. Must match the Network's region.
+                  engine:
+                    type: string
+                    description: Database engine.
+                    enum:
+                    - postgres
+                    - mariadb
+                  engineVersion:
+                    type: string
+                    description: Engine version, e.g. "16.4" for postgres or "10.11.14" for mariadb.
+                  storageGB:
+                    type: integer
+                    description: Allocated storage in GiB.
+                    minimum: 5
+                    maximum: 1000
+                  autoGeneratePassword:
+                    type: boolean
+                    description: >-
+                      Generate the master password and write it to passwordSecretRef, instead of
+                      reading it from there.
+                    default: false
+                  passwordSecretRef:
+                    type: object
+                    description: The Secret in this namespace that holds (or receives) the master password.
+                    required:
+                    - name
+                    - key
+                    properties:
+                      name:
+                        type: string
+                      key:
+                        type: string
+                  networkRef:
+                    type: object
+                    description: The Network in this namespace to place the database in, by name.
+                    required:
+                    - name
+                    properties:
+                      name:
+                        type: string
+                  networkSelector:
+                    type: object
+                    description: Select the Network in this namespace by labels. The first match by name wins.
+                    required:
+                    - matchLabels
+                    properties:
+                      matchLabels:
+                        type: object
+                        additionalProperties:
+                          type: string
+                  providerConfigName:
+                    type: string
+                    description: Namespaced AWS ProviderConfig in this namespace to provision with.
+                    default: default
+                  managementPolicies:
+                    type: array
+                    description: >-
+                      Management policies for the AWS resources. ["*"] manages them fully; use
+                      ["Create","Observe","Update","LateInitialize"] to orphan them on delete.
+                    default:
+                    - "*"
+                    items:
+                      type: string
+                      enum:
+                      - "*"
+                      - Create
+                      - Observe
+                      - Update
+                      - Delete
+                      - LateInitialize
+          status:
+            type: object
+            description: What the database resolved and what it exposes.
+            properties:
+              network:
+                type: string
+                description: Name of the Network the database is placed in.
+              vpcId:
+                type: string
+                description: VPC the database is placed in, read from the Network.
+              subnetIds:
+                type: array
+                description: Subnets of the DB subnet group, read from the Network.
+                items:
+                  type: string
+              securityGroupId:
+                type: string
+                description: Security group the database owns.
+              address:
+                type: string
+                description: Hostname of the database.
+              endpoint:
+                type: string
+                description: Address and port of the database.
+              port:
+                type: integer
+                description: Port the database listens on.
+              connectionSecret:
+                type: string
+                description: Secret in this namespace holding endpoint, host, port, username and password.

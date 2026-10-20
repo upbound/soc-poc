@@ -1,0 +1,9 @@
+apiVersion: soc.upbound.io/v1alpha1
+kind: ProxyConfig
+metadata:
+  name: networks.aws.platform.upbound.io
+spec:
+  providerConfigRef:
+    kind: ClusterProviderConfig
+    name: network-service-cp
+  remoteNamespace: ctp-database

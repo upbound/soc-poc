@@ -1,0 +1,25 @@
+# Same name in two namespaces of the database CP. Observe-only, so no AWS
+# resources are created: only the two remote names are compared. verify.sh
+# creates namespace team-b and never deletes it: deleting a namespace while a
+# proxy Object in it is still finalizing deadlocks the Object (FINDINGS.md).
+apiVersion: aws.platform.upbound.io/v1alpha1
+kind: Network
+metadata:
+  name: iso
+  namespace: team-a
+spec:
+  parameters:
+    id: soc-poc-iso-a
+    region: us-west-2
+    managementPolicies: ["Observe"]
+---
+apiVersion: aws.platform.upbound.io/v1alpha1
+kind: Network
+metadata:
+  name: iso
+  namespace: team-b
+spec:
+  parameters:
+    id: soc-poc-iso-b
+    region: us-west-2
+    managementPolicies: ["Observe"]

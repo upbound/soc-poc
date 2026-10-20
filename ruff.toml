@@ -1,0 +1,8 @@
+# One rule set for the proxy function, the generator, the database service and the tests.
+target-version = "py313"
+line-length = 120
+extend-exclude = [".up", "_output", ".venv"]
+
+[lint.per-file-ignores]
+# main.py is the `up function generate` scaffold, left as generated.
+"**/function/main.py" = ["BLE001", "RUF100"]

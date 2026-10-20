@@ -1,0 +1,21 @@
+apiVersion: meta.dev.upbound.io/v1alpha1
+kind: CompositionTest
+metadata:
+  name: proxyconfig-composes-nothing
+spec:
+  compositionPath: apis/proxyconfigs/composition.yaml
+  xrdPath: apis/proxyconfigs/definition.yaml
+  xrPath: examples/proxyconfigs/networks.yaml
+  timeoutSeconds: 120
+  validate: false
+  assertResources:
+  - apiVersion: soc.upbound.io/v1alpha1
+    kind: ProxyConfig
+    metadata:
+      name: networks.aws.platform.upbound.io
+    spec:
+      crossplane:
+        resourceRefs: []
+      providerConfigRef:
+        kind: ClusterProviderConfig
+        name: network-service-cp

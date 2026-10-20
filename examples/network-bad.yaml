@@ -1,0 +1,10 @@
+# A Network the service cannot build: the error must surface on the database CP.
+apiVersion: aws.platform.upbound.io/v1alpha1
+kind: Network
+metadata:
+  name: net-bad
+  namespace: team-a
+spec:
+  parameters:
+    id: soc-poc-net-bad
+    region: us-nowhere-1

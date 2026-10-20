@@ -1,0 +1,25 @@
+# Placed by name, with a password supplied by the user.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-b-password
+  namespace: team-a
+stringData:
+  password: Upb0und-soc-poc-db-b
+---
+apiVersion: aws.platform.upbound.io/v1alpha1
+kind: SQLInstance
+metadata:
+  name: db-b
+  namespace: team-a
+spec:
+  parameters:
+    region: us-west-2
+    engine: mariadb
+    engineVersion: "10.11"
+    storageGB: 20
+    passwordSecretRef:
+      name: db-b-password
+      key: password
+    networkRef:
+      name: net-a

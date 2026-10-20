@@ -1,0 +1,15 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: proxyconfigs.soc.upbound.io
+spec:
+  compositeTypeRef:
+    apiVersion: soc.upbound.io/v1alpha1
+    kind: ProxyConfig
+  mode: Pipeline
+  pipeline:
+  # A ProxyConfig composes nothing yet; the proxies read it. A health check that
+  # observes the target namespace is the planned next step.
+  - functionRef:
+      name: crossplane-contrib-function-auto-ready
+    step: crossplane-contrib-function-auto-ready

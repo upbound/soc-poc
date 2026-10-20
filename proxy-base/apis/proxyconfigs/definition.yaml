@@ -1,0 +1,62 @@
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: proxyconfigs.soc.upbound.io
+spec:
+  group: soc.upbound.io
+  scope: Cluster
+  names:
+    categories:
+    - crossplane
+    - soc
+    kind: ProxyConfig
+    plural: proxyconfigs
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    additionalPrinterColumns:
+    - name: PROVIDERCONFIG
+      type: string
+      jsonPath: .spec.providerConfigRef.name
+    - name: REMOTE-NAMESPACE
+      type: string
+      jsonPath: .spec.remoteNamespace
+    schema:
+      openAPIV3Schema:
+        type: object
+        description: >-
+          ProxyConfig points one proxied API at the control plane that serves it. Name it after
+          the proxied XRD, e.g. networks.aws.platform.upbound.io. It carries no routing or schema
+          of its own: the provider-kubernetes ProviderConfig is the target.
+        properties:
+          spec:
+            type: object
+            required:
+            - providerConfigRef
+            properties:
+              providerConfigRef:
+                type: object
+                description: The provider-kubernetes ProviderConfig that reaches the service control plane.
+                required:
+                - name
+                properties:
+                  kind:
+                    type: string
+                    description: ClusterProviderConfig, or a ProviderConfig in each proxied XR's namespace.
+                    enum:
+                    - ClusterProviderConfig
+                    - ProviderConfig
+                    default: ClusterProviderConfig
+                  name:
+                    type: string
+              remoteNamespace:
+                type: string
+                description: >-
+                  Proof of concept only: the namespace on the service control plane. The design
+                  takes it from the ProviderConfig's kubeconfig context instead, once
+                  provider-kubernetes defaults an empty manifest namespace from it. Changing it
+                  moves nothing; treat it as immutable.
+                x-kubernetes-validations:
+                - rule: self == oldSelf
+                  message: remoteNamespace is immutable

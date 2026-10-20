@@ -1,0 +1,20 @@
+# Placed by label: the database takes vpcId, private subnets and the VPC CIDR
+# from whichever Ready Network in team-a carries network=a.
+apiVersion: aws.platform.upbound.io/v1alpha1
+kind: SQLInstance
+metadata:
+  name: db-a
+  namespace: team-a
+spec:
+  parameters:
+    region: us-west-2
+    engine: postgres
+    engineVersion: "16"
+    storageGB: 20
+    autoGeneratePassword: true
+    passwordSecretRef:
+      name: db-a-password
+      key: password
+    networkSelector:
+      matchLabels:
+        network: a
